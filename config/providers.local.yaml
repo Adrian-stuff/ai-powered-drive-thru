@@ -1,0 +1,77 @@
+# Default profile. Everything runs on the in-store box; the WAN can be unplugged
+# and ordering still works. See docs/05-hardware-sizing.md for the box spec.
+profile: local
+storeId: ${STORE_ID}
+
+providers:
+  vad:
+    adapter: silero
+    options:
+      speechThreshold: 0.55      # raise in noisy lanes; tuned per store
+      silenceTimeoutMs: 550      # fallback only — semantic endpointing leads
+
+  asr:
+    adapter: faster-whisper
+    options:
+      model: large-v3-turbo
+      device: cuda
+      compute_type: int8_float16
+      beam_size: 1               # greedy; beam search costs ~80 ms for ~0.3% WER
+
+  llm:
+    # One adapter covers vLLM, llama.cpp server, Ollama, TGI and LM Studio.
+    adapter: openai-compatible
+    options:
+      base_url: http://127.0.0.1:8000/v1
+      model: qwen3-8b-instruct
+      temperature: 0.2           # ordering is not a creative task
+      max_tokens: 200
+
+  tts:
+    adapter: piper
+    options:
+      voice: en_US-amy-medium
+      speakingRate: 0.97
+
+  pos:
+    adapter: ${POS_VENDOR}       # always store-specific
+    options:
+      endpoint: http://pos.local:8080
+
+  menu:
+    adapter: local-file
+    options:
+      path: /var/lib/drivethru/menu.json
+      watch: true                # 86'd items land here within a second
+
+  telemetry:
+    adapter: otlp-buffered
+    options:
+      endpoint: ${TELEMETRY_URL}
+      diskBufferPath: /var/lib/drivethru/telemetry
+      maxBufferHours: 48         # survives a long WAN outage
+
+  sessionStore:
+    adapter: sqlite
+    options:
+      path: /var/lib/drivethru/sessions.db
+
+# Deadlines come from docs/04-latency-budget.md. Breaching one is a breaker
+# failure, not just a slow turn.
+resilience:
+  asr:
+    timeoutMs: 1500
+    maxRetries: 0                # retrying audio is pointless; the moment passed
+    breaker: { failureThreshold: 3, latencyThresholdMs: 600, resetAfterMs: 30000 }
+  llm:
+    timeoutMs: 2500
+    maxRetries: 1
+    breaker: { failureThreshold: 3, latencyThresholdMs: 900, resetAfterMs: 30000 }
+  tts:
+    timeoutMs: 1500
+    maxRetries: 0
+    breaker: { failureThreshold: 3, latencyThresholdMs: 400, resetAfterMs: 30000 }
+  pos:
+    timeoutMs: 5000
+    maxRetries: 5                # outbox-backed; retry hard
+    breaker: { failureThreshold: 10, latencyThresholdMs: 4000, resetAfterMs: 60000 }

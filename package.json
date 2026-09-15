@@ -1,0 +1,14 @@
+{
+  "name": "ai-powered-drive-thru",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "typecheck": "tsc --build",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/bun": "latest"
+  }
+}

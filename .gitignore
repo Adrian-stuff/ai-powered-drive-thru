@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+
+# Model weights and store-local state — never in git
+models/
+*.gguf
+*.onnx
+/var/

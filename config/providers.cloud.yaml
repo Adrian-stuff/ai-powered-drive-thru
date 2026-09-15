@@ -1,0 +1,42 @@
+# For stores without a GPU box, and for developer laptops. Accepts ~200-350 ms
+# more latency per turn and a per-order cost, in exchange for no local hardware.
+# NOT suitable for a store with unreliable connectivity — there is no L0 here
+# when the WAN drops, only the L5 hardware bypass.
+profile: cloud
+storeId: ${STORE_ID}
+
+providers:
+  vad:
+    adapter: provider-native     # use the ASR vendor's endpointing
+    options: {}
+
+  asr:
+    adapter: deepgram
+    options:
+      model: nova-3
+      api_key: ${DEEPGRAM_API_KEY}
+      interim_results: true
+      endpointing: 300
+
+  llm:
+    adapter: anthropic
+    options:
+      model: claude-sonnet-5
+      api_key: ${ANTHROPIC_API_KEY}
+      temperature: 0.2
+
+  tts:
+    adapter: cartesia
+    options:
+      voice: ${TTS_VOICE_ID}
+      api_key: ${CARTESIA_API_KEY}
+
+  pos:          { adapter: "${POS_VENDOR}", options: { endpoint: "${POS_ENDPOINT}" } }
+  menu:         { adapter: chain-menu-api,  options: { endpoint: "${MENU_API_URL}" } }
+  telemetry:    { adapter: otlp,            options: { endpoint: "${TELEMETRY_URL}" } }
+  sessionStore: { adapter: postgres,        options: { url: "${DATABASE_URL}" } }
+
+resilience:
+  asr: { timeoutMs: 2000, maxRetries: 0, breaker: { failureThreshold: 3, latencyThresholdMs: 800,  resetAfterMs: 30000 } }
+  llm: { timeoutMs: 3000, maxRetries: 1, breaker: { failureThreshold: 3, latencyThresholdMs: 1200, resetAfterMs: 30000 } }
+  tts: { timeoutMs: 2000, maxRetries: 0, breaker: { failureThreshold: 3, latencyThresholdMs: 700,  resetAfterMs: 30000 } }

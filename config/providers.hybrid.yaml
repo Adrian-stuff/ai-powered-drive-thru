@@ -1,0 +1,34 @@
+# Local ears and mouth (latency), cloud brain (reasoning quality), local
+# fallback when the WAN or the vendor goes away.
+profile: hybrid
+storeId: ${STORE_ID}
+
+providers:
+  vad:  { adapter: silero,         options: { speechThreshold: 0.55, silenceTimeoutMs: 550 } }
+  asr:  { adapter: faster-whisper, options: { model: large-v3-turbo, device: cuda, compute_type: int8_float16 } }
+  tts:  { adapter: piper,          options: { voice: en_US-amy-medium } }
+
+  llm:
+    adapter: anthropic
+    options:
+      model: claude-sonnet-5
+      api_key: ${ANTHROPIC_API_KEY}
+      temperature: 0.2
+      max_tokens: 200
+    # Breaker opens (WAN down, vendor degraded, p95 breached) → local, no restart.
+    fallback:
+      adapter: openai-compatible
+      options:
+        base_url: http://127.0.0.1:8000/v1
+        model: qwen3-8b-instruct
+
+  pos:          { adapter: "${POS_VENDOR}", options: { endpoint: http://pos.local:8080 } }
+  menu:         { adapter: local-file,      options: { path: /var/lib/drivethru/menu.json, watch: true } }
+  telemetry:    { adapter: otlp-buffered,   options: { endpoint: "${TELEMETRY_URL}", diskBufferPath: /var/lib/drivethru/telemetry } }
+  sessionStore: { adapter: sqlite,          options: { path: /var/lib/drivethru/sessions.db } }
+
+resilience:
+  llm:
+    timeoutMs: 2000              # tighter than local: fail over rather than wait
+    maxRetries: 0
+    breaker: { failureThreshold: 2, latencyThresholdMs: 800, resetAfterMs: 20000 }
