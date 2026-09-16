@@ -27,7 +27,16 @@ Planned, in roadmap order:
    `retryable`, and `shouldTripBreaker`. The breaker and fallback chain make
    their decisions from these and nothing else.
 4. Honor `ctx.signal` promptly. Barge-in depends on it.
-5. Pass the conformance suite.
+5. Pass the conformance suite. One line in a test file:
+
+   ```ts
+   import { describeAsrConformance } from '@drivethru/contracts/testing/bun';
+   describeAsrConformance('my-adapter', { create: () => new MyAsrProvider() });
+   ```
+
+   The suites are documented in
+   [`packages/contracts/README.md`](../contracts/README.md). A red check names
+   the obligation it enforces, not just the assertion that failed.
 6. Register the factory under a stable name; add it to a profile in `config/`.
 
 Do **not** implement retries, timeouts, circuit breaking, or metrics in an

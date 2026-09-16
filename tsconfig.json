@@ -12,8 +12,10 @@
     "skipLibCheck": true,
     "types": ["bun"],
     "paths": {
-      "@drivethru/contracts": ["./packages/contracts/src/index.ts"]
+      "@drivethru/contracts": ["./packages/contracts/src/index.ts"],
+      "@drivethru/contracts/testing": ["./packages/contracts/src/testing/index.ts"],
+      "@drivethru/contracts/testing/bun": ["./packages/contracts/src/testing/bun.ts"]
     }
   },
-  "include": ["packages/*/src/**/*.ts"]
+  "include": ["packages/*/src/**/*.ts", "packages/*/test/**/*.ts"]
 }

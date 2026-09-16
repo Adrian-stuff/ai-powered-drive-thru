@@ -111,10 +111,15 @@ try/catch someone forgot to write.
 
 Interfaces alone do not make a swap cheap. Three more things do:
 
-**A conformance suite.** `packages/contracts` ships a test kit. A new adapter
-proves it satisfies the port — streaming order, cancellation mid-stream, error
-taxonomy, unicode, empty input — before it is allowed in a profile. Swapping a
-provider that passes the suite is boring, which is the goal.
+**A conformance suite.** `packages/contracts` ships a test kit (built — see
+[its README](../packages/contracts/README.md)). A new adapter proves it
+satisfies the port — streaming order, cancellation mid-stream, capability
+honesty, typed errors — before it is allowed in a profile. Swapping a provider
+that passes the suite is boring, which is the goal.
+
+The kit is itself tested: `test/conformance-kit.test.ts` breaks one obligation
+at a time in a fake and asserts the matching check fails. A suite nobody has
+tried to fool is a suite nobody should trust.
 
 **A golden eval set.** 500 recorded orders with expected `OrderState` outcomes
 (see [`docs/09-evaluation.md`](09-evaluation.md)). A candidate provider must

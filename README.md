@@ -4,9 +4,10 @@ A voice ordering system for quick-service restaurant drive-thrus that runs its
 inference **locally, at the store**, and can swap any model or vendor without
 touching business logic.
 
-> Status: **architecture / planning**. This repository currently contains the
-> design, the port interfaces, and the provider registry. No adapter is
-> implemented yet — see [`docs/07-roadmap.md`](docs/07-roadmap.md).
+> Status: **architecture + contracts**. This repository contains the design,
+> the port interfaces, the provider registry, and the conformance kit and fake
+> providers that adapters are tested against. No vendor adapter is implemented
+> yet — see [`docs/07-roadmap.md`](docs/07-roadmap.md).
 
 ## Why local-first
 
@@ -49,7 +50,7 @@ Decisions and their trade-offs live in [`docs/adr/`](docs/adr/).
 
 ```
 docs/                 architecture, ADRs, ops runbooks
-packages/contracts/   the ports — TypeScript interfaces, zero dependencies
+packages/contracts/   the ports, plus the conformance kit and fake providers
 packages/runtime/     provider registry, config loading, resilience wrappers
 packages/adapters/    one directory per vendor implementation (not yet built)
 config/               per-profile provider wiring (local / cloud / hybrid)
@@ -58,3 +59,7 @@ config/               per-profile provider wiring (local / cloud / hybrid)
 ## Toolchain
 
 Bun. `bun install`, `bun test`, `bun run typecheck`.
+
+An adapter earns its place in a profile by passing its port's conformance
+suite — one line per port, documented in
+[`packages/contracts/README.md`](packages/contracts/README.md).

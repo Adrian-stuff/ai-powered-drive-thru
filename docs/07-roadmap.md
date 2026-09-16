@@ -22,8 +22,11 @@ No models. Prove the order logic in isolation, where it is fast to test.
 
 - `Order Service` + state machine + pricing and combo rules
 - `Menu Catalog` + resolver + alias index
-- Contract conformance test kit in `packages/contracts`
-- 200 hand-written command sequences with expected `OrderState`
+- ~~Contract conformance test kit in `packages/contracts`~~ **done** — suites for
+  ASR, LLM, TTS, VAD and POS, plus fakes, `TEST_MENU`, and meta-tests proving
+  the kit catches broken adapters
+- 200 hand-written command sequences with expected `OrderState`, built on
+  `TEST_MENU`
 
 **Gate:** every command sequence produces the right order, deterministically.
 
